@@ -4,8 +4,15 @@ using UnityEngine;
 
 public class BaseUnitController : MonoBehaviour {
 
-    public bool bIsActive;
+    public bool bIsPlayer;
+    public bool bIsSummoner;
 
+    public int MoveRange;
+    public int AttackRange;
+    public int Attack;
+    public int Defence;
+    public int Health;
+    
     // Use this for initialization
     void Start () {
 

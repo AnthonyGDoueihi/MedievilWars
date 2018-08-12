@@ -6,10 +6,16 @@ public class WaterGenerator : MonoBehaviour {
 
     public SquareGrid squareGrid;
     public GameObject[] background = new GameObject[16];
-    public Canvas backgroundCanvas;
-    
+    public Canvas moveArea;
+    public GameObject spriteMask;
+
+
+
     public void GenerateMap(int[,] map, float squareSize)
     {
+        InputController input = FindObjectOfType<InputController>();
+        input.squareCoord = new SquareTile[map.GetLength(0),map.GetLength(1)];
+
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -22,12 +28,26 @@ public class WaterGenerator : MonoBehaviour {
             {
                 Square currentSquare = squareGrid.squares[x, y];
                 GameObject tile = Instantiate(background[currentSquare.configuration], currentSquare.bottomLeft.position, Quaternion.identity);
-                Instantiate(backgroundCanvas, tile.transform);
-                tile.transform.parent = this.transform;
+                tile.transform.parent = transform;
+
+                SquareTile squareTile = tile.GetComponent<SquareTile>();
+                squareTile.coord[0] = x;
+                squareTile.coord[1] = y;
+
+                if (input)
+                {
+                    input.squareCoord[x, y] = squareTile;
+                }
+
+
             }
         }
-
-
+        /*
+        Vector3 centreOfMap = new Vector3(((map.GetLength(0) - 1) * squareSize)/2, ((map.GetLength(1) - 1) * squareSize)/2, 0);
+        Canvas areaWithoutMask = Instantiate(moveArea, spriteMask.transform);
+        areaWithoutMask.GetComponent<RectTransform>().position = centreOfMap;
+        areaWithoutMask.GetComponentInChildren<SpriteRenderer>().size = new Vector2((map.GetLength(0) - 1) * squareSize, (map.GetLength(1) - 1) * squareSize);
+        */
     }
 
    
@@ -118,13 +138,13 @@ public class WaterGenerator : MonoBehaviour {
         }
     }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update () {
 		
 	}
     /*

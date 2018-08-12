@@ -6,17 +6,17 @@ public class ArmyGenerator : MonoBehaviour {
 
     WaterGenerator waterGen;
     MapGenerator mapGen;
-    public BaseUnitController U_playerSummoner;
-    public BaseUnitController U_playerWarrior;
-    public BaseUnitController U_playerShieldman;
-    public BaseUnitController U_playerCaster;
-    public BaseUnitController U_playerArcher;
+    public Summoner U_playerSummoner;
+    public Warrior U_playerWarrior;
+    public Shieldman U_playerShieldman;
+    public Caster U_playerCaster;
+    public Archer U_playerArcher;
     public GameObject playerFolder;
-    public BaseUnitController U_enemySummoner;
-    public BaseUnitController U_enemyWarrior;
-    public BaseUnitController U_enemyShieldman;
-    public BaseUnitController U_enemyCaster;
-    public BaseUnitController U_enemyArcher;
+    public Summoner U_enemySummoner;
+    public Warrior U_enemyWarrior;
+    public Shieldman U_enemyShieldman;
+    public Caster U_enemyCaster;
+    public Archer U_enemyArcher;
     public GameObject enemyFolder;
 
     List<GameObject> playerSpawnPoints;
@@ -29,10 +29,10 @@ public class ArmyGenerator : MonoBehaviour {
         squareSize = size;
         float mapWidth = (width -1) * squareSize;
         float mapHeight = (height -1) * squareSize;
-        float spawnWidth = mapWidth / squareSize / 10;
-        float spawnHeight = mapHeight / squareSize / 10 ;
+        float spawnWidth = mapWidth / 10;
+        float spawnHeight = mapHeight / 10 ;
 
-        int unitToSpawn = (int) (spawnWidth * spawnHeight) / 4;
+        int unitToSpawn = (int) ((width - 1)/10 * (height - 1)/10) / 2;
 
         foreach (Transform child in playerFolder.transform)
         {
@@ -153,7 +153,9 @@ public class ArmyGenerator : MonoBehaviour {
             for (int i = 0; i < numberToSpawn; i++)
             {
                 int position = Random.Range(0, playerSpawnPoints.Count - 1);
-                Instantiate(toSpawn, playerSpawnPoints[position].transform.position, Quaternion.identity, playerFolder.transform);
+                BaseUnitController unit = Instantiate(toSpawn, playerSpawnPoints[position].transform.position, Quaternion.identity, playerFolder.transform);
+                playerSpawnPoints[position].GetComponent<SquareTile>().currentUnit = unit;
+                unit.bIsPlayer = true;
                 playerSpawnPoints.RemoveAt(position);
             }
         }
@@ -162,10 +164,11 @@ public class ArmyGenerator : MonoBehaviour {
             for (int i = 0; i < numberToSpawn; i++)
             {
                 int position = Random.Range(0, enemySpawnPoints.Count - 1);
-                Instantiate(toSpawn, enemySpawnPoints[position].transform.position, Quaternion.identity, enemyFolder.transform);
+                BaseUnitController unit = Instantiate(toSpawn, enemySpawnPoints[position].transform.position, Quaternion.identity, enemyFolder.transform);
+                enemySpawnPoints[position].GetComponent<SquareTile>().currentUnit = unit;
+                unit.bIsPlayer = false;
                 enemySpawnPoints.RemoveAt(position);
             }
-        }
-        
+        }        
     }
 }

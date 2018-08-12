@@ -21,7 +21,8 @@ GameObject:
   - component: {fileID: 4449556186013020}
   - component: {fileID: 212935077120490494}
   - component: {fileID: 61760156093567808}
-  m_Layer: 0
+  - component: {fileID: 114279162061422720}
+  m_Layer: 9
   m_Name: Yellow_Building
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -66,6 +67,17 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.32, y: 0.32}
   m_EdgeRadius: 0
+--- !u!114 &114279162061422720
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1590295369289268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd4cf7aab64a6f42ab46be7d453cc19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212935077120490494
 SpriteRenderer:
   m_ObjectHideFlags: 1
