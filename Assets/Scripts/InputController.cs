@@ -10,12 +10,15 @@ public class InputController : MonoBehaviour {
     CameraController cam;
     public Canvas UIActiveSquare;
     public SquareTile[,] squareCoord;
-    int[] currentActive = new int[2];
+    int[] currentActiveSquare = new int[2];
     float moveSquareTime = 0f;
     public float reloadTime = 0.1f;
+
     bool bUnitMenu;
     bool bIsChooseMove;
     bool bIsChooseAttack;
+    bool bIsSummoner;
+
     List<SquareTile> listFloodFillResult = new List<SquareTile>();
     UnitMenu unitMenu;
     public GameObject uiOverlay;
@@ -32,7 +35,7 @@ public class InputController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-
+        
         if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
         {
             isMouse = true;
@@ -138,16 +141,12 @@ public class InputController : MonoBehaviour {
     {
         if (UIActiveSquare != null)
         {
-            UIActiveSquare.GetComponent<RectTransform>().position = squareCoord[currentActive[0], currentActive[1]].gameObject.transform.position;
+            UIActiveSquare.GetComponent<RectTransform>().position = squareCoord[currentActiveSquare[0], currentActiveSquare[1]].gameObject.transform.position;
         }
 
         if (isMouse)
         {
-            if (bUnitMenu)
-            {
-
-            }
-            else
+            if (!bUnitMenu)            
             {
                 int layerMask = 1 << 9;
                 layerMask = ~layerMask;
@@ -156,18 +155,14 @@ public class InputController : MonoBehaviour {
                 {
                     SquareTile squareTile = rayHit.collider.gameObject.GetComponent<SquareTile>();
                     squareTile.bIsActive = true;
-                    currentActive = squareTile.coord;
+                    currentActiveSquare = squareTile.coord;
                 }
             }
         }
 
         if (isController)
         {
-            if (bUnitMenu)
-            {
-
-            }
-            else
+            if (!bUnitMenu)
             {
                 bool bSquareUp = false;
                 bool bSquareDown = false;
@@ -210,8 +205,8 @@ public class InputController : MonoBehaviour {
 
                 if (moveSquareTime <= 0)
                 {
-                    int x = currentActive[0];
-                    int y = currentActive[1];
+                    int x = currentActiveSquare[0];
+                    int y = currentActiveSquare[1];
                     if (bSquareUp)
                     {
                         if (y + 1 < squareCoord.GetLength(1))
@@ -219,7 +214,7 @@ public class InputController : MonoBehaviour {
                             moveSquareTime = reloadTime;
                             squareCoord[x, y].bIsActive = false;
                             squareCoord[x, y + 1].bIsActive = true;
-                            currentActive = squareCoord[x, y + 1].coord;
+                            currentActiveSquare = squareCoord[x, y + 1].coord;
                             return;
                         }
                     }
@@ -230,7 +225,7 @@ public class InputController : MonoBehaviour {
                             moveSquareTime = reloadTime;
                             squareCoord[x, y].bIsActive = false;
                             squareCoord[x, y - 1].bIsActive = true;
-                            currentActive = squareCoord[x, y - 1].coord;
+                            currentActiveSquare = squareCoord[x, y - 1].coord;
                             return;
                         }
                     }
@@ -241,7 +236,7 @@ public class InputController : MonoBehaviour {
                             moveSquareTime = reloadTime;
                             squareCoord[x, y].bIsActive = false;
                             squareCoord[x + 1, y].bIsActive = true;
-                            currentActive = squareCoord[x + 1, y].coord;
+                            currentActiveSquare = squareCoord[x + 1, y].coord;
                             return;
                         }
                     }
@@ -252,7 +247,7 @@ public class InputController : MonoBehaviour {
                             moveSquareTime = reloadTime;
                             squareCoord[x, y].bIsActive = false;
                             squareCoord[x - 1, y].bIsActive = true;
-                            currentActive = squareCoord[x - 1, y].coord;
+                            currentActiveSquare = squareCoord[x - 1, y].coord;
                             return;
                         }
                     }
@@ -267,44 +262,76 @@ public class InputController : MonoBehaviour {
         {
             if (!bUnitMenu)
             {
-                SquareTile current = squareCoord[currentActive[0], currentActive[1]];
-                if (current.currentUnit != null)
+                if (!bIsChooseMove && !bIsChooseAttack)
                 {
-                    unitMenu.Activate(current.currentUnit.bIsSummoner);
-                    bUnitMenu = true;
+                    SquareTile current = squareCoord[currentActiveSquare[0], currentActiveSquare[1]];
+                    if (current.currentUnit != null)
+                    {
+                        bIsSummoner = current.currentUnit.bIsSummoner;
+                        unitMenu.Activate(bIsSummoner);
+                        bUnitMenu = true;
+                    }
+                }
+                else
+                {
+                    SquareTile current = squareCoord[currentActiveSquare[0], currentActiveSquare[1]];
+                    if (listFloodFillResult.Contains(current))
+                    {
+                        if (bIsChooseAttack)
+                        {
+                            //TODO attack
+                            print("attack this");
+                        }
+                        else if (bIsChooseMove)
+                        {
+                            //TODO move
+                            print("move here");
+                        }
+
+                    }
                 }
             }
-            
+
         }
 
         if (Input.GetButtonDown("Back"))
         {
-            if (bUnitMenu && !bIsChooseAttack && !bIsChooseMove)
-            {
-                unitMenu.Deactivate();
-                bUnitMenu = false;
-            }
-
-            if(bIsChooseAttack || bIsChooseMove)
-            {
-                unitMenu.Activate(squareCoord[currentActive[0], currentActive[1]].currentUnit.bIsSummoner);
-                foreach (Transform child in uiOverlay.transform)
-                {
-                    Destroy(child.gameObject);
-                }
-
-                bIsChooseAttack = false;
-                bIsChooseMove = false;
-            }
+            Back();
         }
 
         if (Input.GetButtonDown("Cancel"))
         {
-            if (bUnitMenu)
+            if (bUnitMenu || bIsChooseAttack || bIsChooseMove)
             {
-                unitMenu.Deactivate();
-                bUnitMenu = false;
+                Back();
             }
+            else
+            {
+                
+            }
+        }
+    }
+
+    void Back()
+    {
+        if (bUnitMenu && !bIsChooseAttack && !bIsChooseMove)
+        {
+            unitMenu.Deactivate();
+            bIsSummoner = false;
+            bUnitMenu = false;
+        }
+
+        if (bIsChooseAttack || bIsChooseMove)
+        {
+            bUnitMenu = true;
+
+            unitMenu.Activate(bIsSummoner);
+            foreach (Transform child in uiOverlay.transform)
+            {
+                Destroy(child.gameObject);
+            }
+            bIsChooseAttack = false;
+            bIsChooseMove = false;
         }
     }
 
@@ -314,14 +341,16 @@ public class InputController : MonoBehaviour {
         {
             listFloodFillResult.Clear();
         }
+
         bIsChooseAttack = true;
-        int range = squareCoord[currentActive[0], currentActive[1]].GetComponent<BaseUnitController>().AttackRange;
-        FloodFill(currentActive[0], currentActive[1], range);
+        int range = squareCoord[currentActiveSquare[0], currentActiveSquare[1]].GetComponent<BaseUnitController>().AttackRange;
+        FloodFill(currentActiveSquare[0], currentActiveSquare[1], range);
 
         foreach (SquareTile x in listFloodFillResult)
         {
             Instantiate(attackArea, x.transform.position, Quaternion.identity, uiOverlay.transform);
         }
+        bUnitMenu = false;
 
     }
 
@@ -331,29 +360,30 @@ public class InputController : MonoBehaviour {
         {
             listFloodFillResult.Clear();
         }
+
         bIsChooseMove = true;
-        int range = squareCoord[currentActive[0], currentActive[1]].currentUnit.MoveRange;
-        print(range);
-        
-        FloodFill(currentActive[0], currentActive[1], range);
+        int range = squareCoord[currentActiveSquare[0], currentActiveSquare[1]].currentUnit.MoveRange;
+
+        FloodFill(currentActiveSquare[0], currentActiveSquare[1], range);
 
         foreach (SquareTile x in listFloodFillResult)
         {
             Instantiate(moveArea, x.transform.position, Quaternion.identity, uiOverlay.transform);
         }
-
-        
+        bUnitMenu = false;
     }
+
 
     void FloodFill(int xCoord, int yCoord, int movesLeft)
     {
+
         int thisMoveLeft = movesLeft - 1;
         
         if (!listFloodFillResult.Contains(squareCoord[xCoord - 1, yCoord]))
         {
             if (bIsChooseMove)
             {
-                if (squareCoord[xCoord -1, yCoord].gameObject.layer == 8)
+                if (squareCoord[xCoord -1, yCoord].gameObject.layer == 8 && squareCoord[xCoord - 1, yCoord].currentUnit == null)
                 {
                     listFloodFillResult.Add(squareCoord[xCoord - 1, yCoord]);
                 }
@@ -362,27 +392,22 @@ public class InputController : MonoBehaviour {
 
             if (bIsChooseAttack)
             {
-                if (squareCoord[xCoord -1, yCoord].gameObject.layer == 9)
+                if (squareCoord[xCoord -1, yCoord].currentUnit != null)
                 {
-                    if (squareCoord[currentActive[0], currentActive[1]].currentUnit.bIsPlayer != squareCoord[xCoord -1, yCoord].currentUnit.bIsPlayer)
+                    if (squareCoord[xCoord, yCoord].currentUnit.bIsPlayer != squareCoord[xCoord -1, yCoord].currentUnit.bIsPlayer)
                     {
                         listFloodFillResult.Add(squareCoord[xCoord - 1, yCoord]);
                     }
-                }
-
-                if (thisMoveLeft > 0)
-                {
-                    FloodFill(xCoord - 1, yCoord, thisMoveLeft);
-                }
-
+                }                               
             }
+            
         }
 
         if (!listFloodFillResult.Contains(squareCoord[xCoord + 1, yCoord]))
         {
             if (bIsChooseMove)
             {
-                if (squareCoord[xCoord + 1, yCoord].gameObject.layer == 8)
+                if (squareCoord[xCoord + 1, yCoord].gameObject.layer == 8 && squareCoord[xCoord + 1, yCoord].currentUnit == null)
                 {
                     listFloodFillResult.Add(squareCoord[xCoord + 1, yCoord]);
                 }
@@ -390,26 +415,22 @@ public class InputController : MonoBehaviour {
 
             if (bIsChooseAttack)
             {
-                if (squareCoord[xCoord + 1, yCoord].gameObject.layer == 9)
+                if (squareCoord[xCoord + 1, yCoord].currentUnit != null)
                 {
-                    if (squareCoord[currentActive[0], currentActive[1]].currentUnit.bIsPlayer != squareCoord[xCoord + 1, yCoord].currentUnit.bIsPlayer)
+                    if (squareCoord[xCoord, yCoord].currentUnit.bIsPlayer != squareCoord[xCoord + 1, yCoord].currentUnit.bIsPlayer)
                     {
                         listFloodFillResult.Add(squareCoord[xCoord + 1, yCoord]);
                     }
                 }
             }
 
-            if (thisMoveLeft > 0)
-            {
-                FloodFill(xCoord + 1, yCoord, thisMoveLeft);
-            }
         }
 
         if (!listFloodFillResult.Contains(squareCoord[xCoord, yCoord - 1]))
         {
             if (bIsChooseMove)
             {
-                if (squareCoord[xCoord, yCoord - 1].gameObject.layer == 8)
+                if (squareCoord[xCoord, yCoord - 1].gameObject.layer == 8 && squareCoord[xCoord, yCoord - 1].currentUnit == null)
                 {
                     listFloodFillResult.Add(squareCoord[xCoord, yCoord - 1]);
                 }
@@ -417,26 +438,22 @@ public class InputController : MonoBehaviour {
 
             if (bIsChooseAttack)
             {
-                if (squareCoord[xCoord, yCoord - 1].gameObject.layer == 9)
+                if (squareCoord[xCoord, yCoord - 1].currentUnit != null)
                 {
-                    if (squareCoord[currentActive[0], currentActive[1]].currentUnit.bIsPlayer != squareCoord[xCoord, yCoord - 1].currentUnit.bIsPlayer)
+                    if (squareCoord[xCoord, yCoord].currentUnit.bIsPlayer != squareCoord[xCoord, yCoord - 1].currentUnit.bIsPlayer)
                     {
                         listFloodFillResult.Add(squareCoord[xCoord, yCoord - 1]);
                     }
                 }
             }
 
-            if (thisMoveLeft > 0)
-            {
-                FloodFill(xCoord, yCoord - 1, thisMoveLeft);
-            }
         }
 
         if (!listFloodFillResult.Contains(squareCoord[xCoord, yCoord + 1]))
         {
             if (bIsChooseMove)
             {
-                if (squareCoord[xCoord, yCoord + 1].gameObject.layer == 8)
+                if (squareCoord[xCoord, yCoord + 1].gameObject.layer == 8 && squareCoord[xCoord, yCoord + 1].currentUnit == null)
                 {
                     listFloodFillResult.Add(squareCoord[xCoord, yCoord + 1]);
                 }
@@ -444,21 +461,25 @@ public class InputController : MonoBehaviour {
 
             if (bIsChooseAttack)
             {
-                if (squareCoord[xCoord, yCoord + 1].gameObject.layer == 9)
+                if (squareCoord[xCoord, yCoord + 1].currentUnit != null)
                 {
-                    if (squareCoord[currentActive[0], currentActive[1]].currentUnit.bIsPlayer != squareCoord[xCoord, yCoord + 1].currentUnit.bIsPlayer)
+                    if (squareCoord[xCoord, yCoord].currentUnit.bIsPlayer != squareCoord[xCoord, yCoord + 1].currentUnit.bIsPlayer)
                     {
                         listFloodFillResult.Add(squareCoord[xCoord, yCoord + 1]);
                     }
                 }
             }
 
-            if (thisMoveLeft > 0)
-            {
-                FloodFill(xCoord, yCoord + 1, thisMoveLeft);
-            }
         }
 
+
+        if (thisMoveLeft > 0)
+        {
+            FloodFill(xCoord - 1, yCoord, thisMoveLeft);
+            FloodFill(xCoord + 1, yCoord, thisMoveLeft);
+            FloodFill(xCoord, yCoord - 1, thisMoveLeft);
+            FloodFill(xCoord, yCoord + 1, thisMoveLeft);
+        }
     }
 
 }

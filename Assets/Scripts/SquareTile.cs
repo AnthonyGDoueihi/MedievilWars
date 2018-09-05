@@ -26,7 +26,6 @@ public class SquareTile : MonoBehaviour {
 		if (bIsActive)
         {
            TestIfActive();
-            print(currentUnit);
         }
         else
         {

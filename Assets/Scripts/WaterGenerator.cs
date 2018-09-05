@@ -88,7 +88,6 @@ public class WaterGenerator : MonoBehaviour {
     public class Square
     {
         public ControlNode topLeft, topRight, bottomRight, bottomLeft;
-        public Node centreTop, centreRight, centreBottom, centreLeft;
         public int configuration;
 
         public Square (ControlNode _topLeft, ControlNode _topRight, ControlNode _bottomRight, ControlNode _bottomLeft)
@@ -97,11 +96,6 @@ public class WaterGenerator : MonoBehaviour {
             topRight = _topRight;
             bottomRight = _bottomRight;
             bottomLeft = _bottomLeft;
-
-            centreTop = topLeft.right;
-            centreRight = bottomRight.up;
-            centreBottom = bottomLeft.right;
-            centreLeft = bottomLeft.up;
 
             if (topLeft.active)
                 configuration += 8;
@@ -114,27 +108,16 @@ public class WaterGenerator : MonoBehaviour {
         }
     }
 
-    public class Node
+
+    public class ControlNode
     {
         public Vector3 position;
-        public int vertexIndex = -1;
+        public bool active;
 
-        public Node(Vector3 _pos)
+        public ControlNode(Vector3 _pos, bool _active, float squareSize)
         {
             position = _pos;
-        }
-    }
-
-    public class ControlNode : Node
-    {
-        public bool active;
-        public Node up, right;
-
-        public ControlNode(Vector3 _pos, bool _active, float squareSize) : base(_pos)
-        {
             active = _active;
-            up = new Node(position + Vector3.up * squareSize / 2f);
-            right = new Node(position + Vector3.right * squareSize / 2f);
         }
     }
 

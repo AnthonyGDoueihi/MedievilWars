@@ -48,8 +48,7 @@ public class UnitMenu : MonoBehaviour {
         bool currentside = isLeft;
         Vector3 worldActive = input.UIActiveSquare.transform.position;
         Vector2 viewportActive = Camera.main.WorldToViewportPoint(worldActive);
-        if (viewportActive != null)
-        {
+
             if (viewportActive.x < 0.3)
             {
                 isLeft = false;
@@ -58,7 +57,7 @@ public class UnitMenu : MonoBehaviour {
             {
                 isLeft = true;
             }
-        }
+        
 
         if (currentside != isLeft && isActive)
         {
